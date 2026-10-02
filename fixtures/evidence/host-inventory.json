@@ -1,0 +1,36 @@
+{
+  "collected_from": "dc-inventory-export",
+  "collected_at": "2026-09-30T02:20:00Z",
+  "hosts": [
+    {
+      "id": "HOST-014",
+      "hostname": "WS-FIN-014",
+      "os": "Windows 11 23H2",
+      "encrypted": false
+    },
+    {
+      "id": "HOST-022",
+      "hostname": "WS-ENG-022",
+      "os": "Windows 11 23H2",
+      "encrypted": false
+    },
+    {
+      "id": "HOST-031",
+      "hostname": "DC-EU-031",
+      "os": "Windows Server 2022",
+      "encrypted": false
+    },
+    {
+      "id": "HOST-007",
+      "hostname": "SRV-FILE-007",
+      "os": "Windows Server 2019",
+      "encrypted": true
+    },
+    {
+      "id": "HOST-002",
+      "hostname": "WKS-ENG-002",
+      "os": "Windows 10 22H2",
+      "encrypted": false
+    }
+  ]
+}

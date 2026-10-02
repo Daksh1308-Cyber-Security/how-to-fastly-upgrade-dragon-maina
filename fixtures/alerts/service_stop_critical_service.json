@@ -1,0 +1,39 @@
+{
+  "alert_id": "ALT-2026-0012",
+  "timestamp": "2026-09-30T01:05:00Z",
+  "rule": {
+    "id": "SIM-0055",
+    "name": "service_stop"
+  },
+  "name": "Security monitoring service stopped",
+  "source": {
+    "ip": "10.20.1.10",
+    "name": "DC-EU-031"
+  },
+  "destination": {
+    "ip": "10.20.1.10",
+    "port": 0
+  },
+  "user": {
+    "name": "a.renard",
+    "account_id": "ACC-ADM",
+    "privileged": true
+  },
+  "asset": {
+    "id": "HOST-031",
+    "criticality": 5,
+    "zone": "restricted"
+  },
+  "mitre": {
+    "tactic": "impact",
+    "technique_id": "T1489",
+    "technique_name": "Service Stop"
+  },
+  "detection": {
+    "confidence": 0.85,
+    "source": "edr"
+  },
+  "context": {
+    "active_c2": true
+  }
+}

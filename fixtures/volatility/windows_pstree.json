@@ -1,0 +1,36 @@
+{
+  "plugin": "windows.pstree",
+  "rows": [
+    {
+      "PID": 4,
+      "PPID": 0,
+      "Name": "System",
+      "__children": [
+        {
+          "PID": 2210,
+          "PPID": 4,
+          "Name": "svcs.exe",
+          "__children": [
+            {
+              "PID": 4471,
+              "PPID": 2210,
+              "Name": "svchost_updater.exe",
+              "__children": [
+                {
+                  "PID": 9012,
+                  "PPID": 4471,
+                  "Name": "powershell.exe"
+                },
+                {
+                  "PID": 9264,
+                  "PPID": 9012,
+                  "Name": "certutil.exe"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

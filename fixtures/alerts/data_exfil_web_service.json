@@ -1,0 +1,40 @@
+{
+  "alert_id": "ALT-2026-0008",
+  "timestamp": "2026-09-29T11:20:18Z",
+  "rule": {
+    "id": "SIM-0302",
+    "name": "exfil_over_web_service"
+  },
+  "name": "Anomalous upload to cloud storage service",
+  "source": {
+    "ip": "10.20.4.31",
+    "name": "WS-FIN-014"
+  },
+  "destination": {
+    "ip": "198.51.100.12",
+    "port": 443
+  },
+  "user": {
+    "name": "j.okafor",
+    "account_id": "ACC-JOK",
+    "privileged": false
+  },
+  "asset": {
+    "id": "HOST-014",
+    "criticality": 5,
+    "zone": "corp"
+  },
+  "mitre": {
+    "tactic": "exfiltration",
+    "technique_id": "T1567",
+    "technique_name": "Exfiltration Over Web Service"
+  },
+  "detection": {
+    "confidence": 0.81,
+    "source": "proxy"
+  },
+  "context": {
+    "data_staged": true,
+    "bytes_out": 241882003
+  }
+}

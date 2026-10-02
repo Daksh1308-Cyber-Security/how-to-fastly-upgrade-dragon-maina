@@ -1,0 +1,31 @@
+{
+  "plugin": "windows.malfind",
+  "rows": [
+    {
+      "PID": 4471,
+      "Start VPN": "0x1f0000000",
+      "End VPN": "0x1f0006000",
+      "Tag": "VAD",
+      "Protection": "PAGE_EXECUTE_READWRITE",
+      "CommitCharge": 4,
+      "PrivateMemory": 1,
+      "File output": "pid.4471.0x1f0000000-0x1f0006000.dmp",
+      "PEB": "0x001bf000",
+      "heap": 1,
+      "intro": "MZ"
+    },
+    {
+      "PID": 9012,
+      "Start VPN": "0x2a1000000",
+      "End VPN": "0x2a1005000",
+      "Tag": "VAD",
+      "Protection": "PAGE_EXECUTE_READWRITE",
+      "CommitCharge": 3,
+      "PrivateMemory": 1,
+      "File output": "pid.9012.0x2a1000000-0x2a1005000.dmp",
+      "PEB": "0x002a1f000",
+      "heap": 1,
+      "intro": "MZ"
+    }
+  ]
+}

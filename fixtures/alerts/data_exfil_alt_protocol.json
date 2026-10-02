@@ -1,0 +1,39 @@
+{
+  "alert_id": "ALT-2026-0009",
+  "timestamp": "2026-09-28T22:44:02Z",
+  "rule": {
+    "id": "SIM-0303",
+    "name": "dns_tunnel"
+  },
+  "name": "Outbound DNS tunnelling suspected",
+  "source": {
+    "ip": "10.20.4.2",
+    "name": "WKS-ENG-002"
+  },
+  "destination": {
+    "ip": "10.20.1.53",
+    "port": 53
+  },
+  "user": {
+    "name": "d.mensah",
+    "account_id": "ACC-DMS",
+    "privileged": false
+  },
+  "asset": {
+    "id": "HOST-002",
+    "criticality": 2,
+    "zone": "corp"
+  },
+  "mitre": {
+    "tactic": "exfiltration",
+    "technique_id": "T1048",
+    "technique_name": "Exfiltration Over Alternative Protocol"
+  },
+  "detection": {
+    "confidence": 0.72,
+    "source": "network_analytics"
+  },
+  "context": {
+    "bytes_out": 41223004
+  }
+}

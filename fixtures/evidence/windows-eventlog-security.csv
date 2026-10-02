@@ -1,0 +1,6 @@
+TimeCreated,EventID,Computer,Account,LogonType,IpAddress,ProcessName
+2026-09-30T02:11:44Z,4624,WS-FIN-014,j.okafor,3,10.20.4.31,svchost_updater.exe
+2026-09-30T02:12:03Z,4720,DC-EU-031,j.okafor,3,10.20.4.31,-.exe
+2026-09-30T02:13:51Z,4688,WS-FIN-014,j.okafor,3,10.20.4.31,svchost_updater.exe
+2026-09-30T02:14:05Z,7045,WS-FIN-014,j.okafor,3,10.20.4.31,sysupdate.exe
+2026-09-30T02:14:07Z,1102,DC-EU-031,SYSTEM,3,10.20.4.31,-.exe

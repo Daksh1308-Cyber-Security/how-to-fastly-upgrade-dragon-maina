@@ -1,0 +1,139 @@
+# Ransomware response playbook
+#
+# Covers NIST SP 800-61 rev2 Detection -> Containment -> Eradication -> Recovery.
+# Preparation is the standing platform baseline (connectors registered, estate
+# seeded, playbooks validated), not a per-incident action -- see
+# docs/ARCHITECTURE.md section 4.
+#
+# Containment actions are gated automatically: they require human approval
+# unless the incident scored `critical` (docs/ARCHITECTURE.md section 5).
+# Do not set `requires_approval: false` on a containment action to bypass that;
+# it is derived from severity, not declared here.
+
+id: ransomware
+name: Ransomware Response
+description: >-
+  Mass-encryption incident. Isolate the affected host, block the actor's
+  infrastructure, collect volatile evidence before eradication, remove the
+  persistence mechanism, then verify containment held.
+phases:
+  - detection
+  - containment
+  - eradication
+  - recovery
+mitre_techniques:
+  - T1486
+  - T1490
+min_severity: low
+
+actions:
+  # --- Detection -------------------------------------------------------------
+  - id: triage_alert
+    name: Score alert severity
+    phase: detection
+    connector: triage.score
+    params: {}
+    timeout_seconds: 30
+    on_failure: abort
+
+  - id: collect_evidence
+    name: Collect disk and log evidence
+    phase: detection
+    connector: evidence.collect
+    # Collected BEFORE containment so volatile evidence survives. Paths are
+    # relative to the configured evidence roots; the connector rejects anything
+    # that escapes them.
+    params:
+      artifacts:
+        - evidence/ransom-note.txt
+        - evidence/windows-eventlog-security.csv
+        - evidence/host-inventory.json
+    timeout_seconds: 300
+    on_failure: continue
+
+  - id: memory_forensics
+    name: Volatility memory analysis
+    phase: detection
+    connector: forensics.volatility
+    params:
+      plugins:
+        - windows.info
+        - windows.pslist
+        - windows.cmdline
+        - windows.pstree
+        - windows.netscan
+        - windows.malfind
+    timeout_seconds: 600
+    # A forensics failure must not block containment -- containment is the
+    # urgent action.
+    on_failure: continue
+
+  - id: extract_iocs
+    name: Extract indicators of compromise
+    phase: detection
+    connector: ioc.extract
+    params: {}
+    timeout_seconds: 60
+    on_failure: continue
+
+  # --- Containment -----------------------------------------------------------
+  - id: isolate_affected_host
+    name: Network-isolate affected host
+    phase: containment
+    connector: estate.isolate_host
+    params:
+      host_id: "{{ alert.asset.id | HOST-014 }}"
+    timeout_seconds: 60
+    on_failure: abort
+
+  - id: block_actor_network
+    name: Block actor C2 network
+    phase: containment
+    connector: firewall.block
+    params:
+      zone_from: corp
+      zone_to: restricted
+      subject: "{{ alert.destination.ip | 0.0.0.0/0 }}"
+    timeout_seconds: 60
+    on_failure: continue
+
+  - id: disable_compromised_account
+    name: Disable compromised account
+    phase: containment
+    connector: identity.lock_account
+    params:
+      account_id: "{{ alert.user.account_id | ACC-JOK }}"
+    timeout_seconds: 60
+    on_failure: continue
+
+  # --- Eradication -----------------------------------------------------------
+  - id: quarantine_payload
+    name: Quarantine ransomware payload
+    phase: eradication
+    connector: eradication.quarantine_file
+    params:
+      path: "{{ alert.context.payload_path | C:\\ProgramData\\svchost_updater.exe }}"
+      reason: Ransomware payload identified during memory analysis
+    timeout_seconds: 60
+    on_failure: continue
+
+  - id: remove_persistence
+    name: Remove persistence mechanism
+    phase: eradication
+    connector: eradication.remove_persistence
+    params:
+      artifact: "{{ alert.context.persistence_artifact | HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run\\SysUpdate }}"
+      kind: registry_run_key
+    timeout_seconds: 60
+    on_failure: continue
+
+  # --- Recovery --------------------------------------------------------------
+  - id: verify_containment
+    name: Verify containment held
+    phase: recovery
+    connector: recovery.verify
+    params:
+      host_id: "{{ alert.asset.id | HOST-014 }}"
+      account_id: "{{ alert.user.account_id | ACC-JOK }}"
+    timeout_seconds: 60
+    on_failure: continue

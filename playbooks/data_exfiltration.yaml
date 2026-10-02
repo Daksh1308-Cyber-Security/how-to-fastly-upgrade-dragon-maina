@@ -1,0 +1,127 @@
+# Data exfiltration response playbook
+#
+# Covers NIST SP 800-61 rev2 Detection -> Containment -> Eradication -> Recovery.
+# Containment is gated on severity; only `critical` runs unattended.
+
+id: data_exfiltration
+name: Data Exfiltration Response
+description: >-
+  Suspected data theft over a C2 channel or web service. Cut egress first --
+  exfiltration is ongoing while the incident is triaged -- then isolate the
+  source, collect network evidence, remove the staging artefacts, and verify.
+phases:
+  - detection
+  - containment
+  - eradication
+  - recovery
+mitre_techniques:
+  - T1041
+  - T1567
+  - T1048
+min_severity: low
+
+actions:
+  # --- Detection -------------------------------------------------------------
+  - id: triage_alert
+    name: Score alert severity
+    phase: detection
+    connector: triage.score
+    params: {}
+    timeout_seconds: 30
+    on_failure: abort
+
+  - id: collect_evidence
+    name: Collect network and host evidence
+    phase: detection
+    connector: evidence.collect
+    params:
+      artifacts:
+        - evidence/network-connections.csv
+        - evidence/host-inventory.json
+        - evidence/suspicious-powershell.txt
+    timeout_seconds: 300
+    on_failure: continue
+
+  - id: memory_forensics
+    name: Volatility memory analysis
+    phase: detection
+    connector: forensics.volatility
+    params:
+      plugins:
+        - windows.info
+        - windows.pslist
+        - windows.netscan
+        - windows.cmdline
+        - windows.filescan
+    timeout_seconds: 600
+    on_failure: continue
+
+  - id: extract_iocs
+    name: Extract indicators of compromise
+    phase: detection
+    connector: ioc.extract
+    params: {}
+    timeout_seconds: 60
+    on_failure: continue
+
+  # --- Containment -----------------------------------------------------------
+  - id: isolate_source_host
+    name: Network-isolate exfiltration source
+    phase: containment
+    connector: estate.isolate_host
+    params:
+      host_id: "{{ alert.asset.id | HOST-002 }}"
+    timeout_seconds: 60
+    on_failure: abort
+
+  - id: block_exfil_destination
+    name: Block exfiltration destination
+    phase: containment
+    connector: firewall.block
+    params:
+      zone_from: corp
+      zone_to: dmz
+      subject: "{{ alert.destination.ip | 0.0.0.0/0 }}"
+    timeout_seconds: 60
+    on_failure: abort
+
+  - id: lock_affected_account
+    name: Lock affected account
+    phase: containment
+    connector: identity.lock_account
+    params:
+      account_id: "{{ alert.user.account_id | ACC-DMS }}"
+    timeout_seconds: 60
+    on_failure: continue
+
+  # --- Eradication -----------------------------------------------------------
+  - id: quarantine_staged_archive
+    name: Quarantine staged exfiltration archive
+    phase: eradication
+    connector: eradication.quarantine_file
+    params:
+      path: "{{ alert.context.payload_path | C:\\Users\\d.mensah\\AppData\\Local\\Temp\\staged.zip }}"
+      reason: Staged archive identified as exfiltration source
+    timeout_seconds: 60
+    on_failure: continue
+
+  - id: remove_persistence
+    name: Remove scheduled task persistence
+    phase: eradication
+    connector: eradication.remove_persistence
+    params:
+      artifact: "{{ alert.context.persistence_artifact | \\Windows\\System32\\Tasks\\OneDriveMaintenanceTask }}"
+      kind: scheduled_task
+    timeout_seconds: 60
+    on_failure: continue
+
+  # --- Recovery --------------------------------------------------------------
+  - id: verify_containment
+    name: Verify egress stayed blocked
+    phase: recovery
+    connector: recovery.verify
+    params:
+      host_id: "{{ alert.asset.id | HOST-002 }}"
+      account_id: "{{ alert.user.account_id | ACC-DMS }}"
+    timeout_seconds: 60
+    on_failure: continue

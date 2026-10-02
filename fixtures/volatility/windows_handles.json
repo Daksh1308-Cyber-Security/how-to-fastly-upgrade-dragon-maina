@@ -1,0 +1,29 @@
+{
+  "plugin": "windows.handles",
+  "rows": [
+    {
+      "PID": 4471,
+      "HandleValue": "0x80000118",
+      "Type": "Mutant",
+      "Name": "Global\\SysUpdateMutex"
+    },
+    {
+      "PID": 4471,
+      "HandleValue": "0x80000440",
+      "Type": "Mutant",
+      "Name": "Global\\{4F2A9C11-8E3D-4B77-9A01-DEADBEEF1234}"
+    },
+    {
+      "PID": 3120,
+      "HandleValue": "0x80000f2c",
+      "Type": "Mutant",
+      "Name": "Shell_TrayWnd"
+    },
+    {
+      "PID": 9012,
+      "HandleValue": "0x80002210",
+      "Type": "File",
+      "Name": "\\Device\\HarddiskVolume3\\Windows\\Temp\\stage2.ps1"
+    }
+  ]
+}

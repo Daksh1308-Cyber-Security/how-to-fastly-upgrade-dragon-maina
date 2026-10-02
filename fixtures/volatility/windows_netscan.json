@@ -1,0 +1,71 @@
+{
+  "plugin": "windows.netscan",
+  "rows": [
+    {
+      "Offset": 441384992,
+      "Proto": 6,
+      "LocalAddr": "10.20.4.31",
+      "LocalPort": 51204,
+      "ForeignAddr": "198.51.100.77",
+      "ForeignPort": 4444,
+      "State": "ESTABLISHED",
+      "PID": 2210,
+      "Owner": "svcs.exe"
+    },
+    {
+      "Offset": 441385352,
+      "Proto": 6,
+      "LocalAddr": "10.20.4.31",
+      "LocalPort": 0,
+      "ForeignAddr": "0.0.0.0",
+      "ForeignPort": 0,
+      "State": "LISTENING",
+      "PID": 4,
+      "Owner": "System"
+    },
+    {
+      "Offset": 455868736,
+      "Proto": 6,
+      "LocalAddr": "10.20.4.2",
+      "LocalPort": 49822,
+      "ForeignAddr": "203.0.113.44",
+      "ForeignPort": 443,
+      "State": "ESTABLISHED",
+      "PID": 4471,
+      "Owner": "svchost_updater.exe"
+    },
+    {
+      "Offset": 455868868,
+      "Proto": 6,
+      "LocalAddr": "10.20.4.2",
+      "LocalPort": 49830,
+      "ForeignAddr": "203.0.113.44",
+      "ForeignPort": 443,
+      "State": "ESTABLISHED",
+      "PID": 4471,
+      "Owner": "svchost_updater.exe"
+    },
+    {
+      "Offset": 455869000,
+      "Proto": 17,
+      "LocalAddr": "10.20.4.2",
+      "LocalPort": 49844,
+      "ForeignAddr": "10.20.1.53",
+      "ForeignPort": 53,
+      "State": "ESTABLISHED",
+      "PID": 9012,
+      "Owner": "powershell.exe"
+    },
+    {
+      "Offset": 473759872,
+      "Proto": 6,
+      "LocalAddr": "10.20.4.52",
+      "LocalPort": 49788,
+      "ForeignAddr": "185.220.101.44",
+      "ForeignPort": 51004,
+      "State": "ESTABLISHED",
+      "PID": 6644,
+      "Owner": "mimilib.exe"
+    }
+  ]
+}

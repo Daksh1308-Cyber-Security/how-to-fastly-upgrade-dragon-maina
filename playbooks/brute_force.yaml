@@ -1,0 +1,108 @@
+# Brute force response playbook
+#
+# Covers NIST SP 800-61 rev2 Detection -> Containment -> Eradication -> Recovery.
+#
+# This is the lowest-urgency of the four playbooks and the one most likely to be
+# a false positive, so `min_severity` is `medium`: a low-severity burst should
+# be triaged and closed rather than triggering containment
+# (docs/ARCHITECTURE.md section 5 -- low is recorded and closed as a suspected
+# false positive).
+
+id: brute_force
+name: Brute Force Response
+description: >-
+  Authentication attack (password spraying or brute force). Lock the targeted
+  account, block the source range, collect authentication logs, remove any
+  persistence the intrusion established, then verify.
+phases:
+  - detection
+  - containment
+  - eradication
+  - recovery
+mitre_techniques:
+  - T1110
+min_severity: medium
+
+actions:
+  # --- Detection -------------------------------------------------------------
+  - id: triage_alert
+    name: Score alert severity
+    phase: detection
+    connector: triage.score
+    params: {}
+    timeout_seconds: 30
+    on_failure: abort
+
+  - id: collect_evidence
+    name: Collect authentication evidence
+    phase: detection
+    connector: evidence.collect
+    params:
+      artifacts:
+        - evidence/authentication-events.csv
+    timeout_seconds: 300
+    on_failure: continue
+
+  - id: memory_forensics
+    name: Volatility memory analysis
+    phase: detection
+    connector: forensics.volatility
+    params:
+      plugins:
+        - windows.info
+        - windows.pslist
+        - windows.netscan
+    timeout_seconds: 600
+    on_failure: continue
+
+  - id: extract_iocs
+    name: Extract indicators of compromise
+    phase: detection
+    connector: ioc.extract
+    params: {}
+    timeout_seconds: 60
+    on_failure: continue
+
+  # --- Containment -----------------------------------------------------------
+  - id: block_source_range
+    name: Block attacking source range
+    phase: containment
+    connector: firewall.block
+    params:
+      zone_from: corp
+      zone_to: restricted
+      subject: "{{ alert.source.ip | 0.0.0.0/0 }}"
+    timeout_seconds: 60
+    # Deliberately `abort`: if the block cannot be applied there is no point
+    # locking the account and pretending the source is cut off.
+    on_failure: abort
+
+  - id: lock_targeted_account
+    name: Lock targeted account
+    phase: containment
+    connector: identity.lock_account
+    params:
+      account_id: "{{ alert.user.account_id | ACC-DMS }}"
+    timeout_seconds: 60
+    on_failure: continue
+
+  # --- Eradication -----------------------------------------------------------
+  - id: remove_persistence
+    name: Remove any persistence established
+    phase: eradication
+    connector: eradication.remove_persistence
+    params:
+      artifact: "{{ alert.context.persistence_artifact | HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\\updater }}"
+      kind: registry_run_key
+    timeout_seconds: 60
+    on_failure: continue
+
+  # --- Recovery --------------------------------------------------------------
+  - id: verify_containment
+    name: Verify account remains locked
+    phase: recovery
+    connector: recovery.verify
+    params:
+      account_id: "{{ alert.user.account_id | ACC-DMS }}"
+    timeout_seconds: 60
+    on_failure: continue

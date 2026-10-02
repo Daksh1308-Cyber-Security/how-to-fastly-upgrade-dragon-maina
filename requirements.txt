@@ -1,0 +1,22 @@
+# Incident Response Automation — runtime dependencies
+#
+# Pinned exactly. Changing a version here requires updating
+# docs/ARCHITECTURE.md section 9 (Toolchain) in the same change.
+# See AGENTS.md section 3 -- no new dependencies without a documented
+# reason and the user's approval.
+#
+# Target interpreter: Python 3.11 (see docs/ARCHITECTURE.md section 9)
+
+# --- API layer (AGENTS.md / brief: FastAPI) ---
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
+pydantic==2.10.4
+
+# --- Playbook definitions (brief: YAML) ---
+PyYAML==6.0.2
+
+# --- Reporting (brief: Jinja2) ---
+Jinja2==3.1.5
+
+# --- Forensics (brief: Volatility) ---
+volatility3==2.28.2

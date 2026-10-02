@@ -1,0 +1,43 @@
+{
+  "alert_id": "ALT-2026-0007",
+  "timestamp": "2026-09-29T15:55:41Z",
+  "rule": {
+    "id": "SIM-0301",
+    "name": "exfil_over_c2"
+  },
+  "name": "Large outbound transfer to known C2 infrastructure",
+  "source": {
+    "ip": "10.20.4.2",
+    "name": "WKS-ENG-002"
+  },
+  "destination": {
+    "ip": "203.0.113.44",
+    "port": 443
+  },
+  "user": {
+    "name": "d.mensah",
+    "account_id": "ACC-DMS",
+    "privileged": false
+  },
+  "asset": {
+    "id": "HOST-002",
+    "criticality": 2,
+    "zone": "corp"
+  },
+  "mitre": {
+    "tactic": "exfiltration",
+    "technique_id": "T1041",
+    "technique_name": "Exfiltration Over C2 Channel"
+  },
+  "detection": {
+    "confidence": 0.89,
+    "source": "network_analytics"
+  },
+  "context": {
+    "data_staged": true,
+    "active_c2": true,
+    "bytes_out": 918273645,
+    "payload_path": "C:\\Users\\d.mensah\\AppData\\Local\\Temp\\staged.zip",
+    "persistence_artifact": "\\Windows\\System32\\Tasks\\OneDriveMaintenanceTask"
+  }
+}

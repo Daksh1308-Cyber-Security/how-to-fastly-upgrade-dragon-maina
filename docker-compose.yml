@@ -1,0 +1,43 @@
+# Incident Response Automation — services
+#
+# One service. Execution is single-node and in-process (no Celery, no
+# Redis -- see docs/ARCHITECTURE.md section 9.1). A worker service is
+# deliberately NOT provided; add one only with a documented reason and
+# the user's approval (AGENTS.md section 3).
+name: ir-automation
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    command: ["uvicorn", "soar.api.main:app", "--host", "0.0.0.0", "--port", "8000"]
+    ports:
+      - "8000:8000"
+    volumes:
+      # Runtime state: incidents, evidence, chain of custody, metrics.
+      - ./data:/app/data
+      # Generated reports.
+      - ./reports:/app/reports
+      # Playbook definitions -- mounted read-only so the running engine
+      # cannot rewrite the playbooks it is executing.
+      - ./playbooks:/app/playbooks:ro
+      # Fixtures: alert replay set + recorded Volatility output.
+      # fixtures/memory/ is git-ignored and operator-supplied.
+      - ./fixtures:/app/fixtures
+    environment:
+      # Containment is ALWAYS simulated. There is no live mode.
+      # These are recorded in every run journal for auditability.
+      SOAR_EXECUTION_MODE: "simulated"
+      # Evidence collection root. Reads here are read-only by contract.
+      SOAR_EVIDENCE_ROOTS: "/app/fixtures"
+      SOAR_DATA_DIR: "/app/data"
+      SOAR_REPORTS_DIR: "/app/reports"
+      SOAR_PLAYBOOKS_DIR: "/app/playbooks"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://localhost:8000/healthz').status==200 else 1)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s

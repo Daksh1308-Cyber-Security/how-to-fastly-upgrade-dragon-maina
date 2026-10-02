@@ -1,0 +1,12 @@
+# Incident Response Automation — development dependencies
+#
+# Installed in the same container as requirements.txt so the pinned
+# interpreter is always 3.11 (AGENTS.md section 7). No local venv.
+
+-r requirements.txt
+
+# --- Test runner ---
+pytest==8.3.4
+
+# --- TestClient backend for FastAPI (no network access required) ---
+httpx==0.28.1

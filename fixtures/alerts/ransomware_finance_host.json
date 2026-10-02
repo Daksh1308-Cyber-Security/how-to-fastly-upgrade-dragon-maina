@@ -1,0 +1,44 @@
+{
+  "alert_id": "ALT-2026-0001",
+  "timestamp": "2026-09-30T02:14:07Z",
+  "rule": {
+    "id": "SIM-0041",
+    "name": "mass_file_modification"
+  },
+  "name": "Mass file encryption on finance workstation",
+  "source": {
+    "ip": "10.20.4.31",
+    "name": "WS-FIN-014"
+  },
+  "destination": {
+    "ip": "203.0.113.44",
+    "port": 8443
+  },
+  "user": {
+    "name": "j.okafor",
+    "account_id": "ACC-JOK",
+    "privileged": false
+  },
+  "asset": {
+    "id": "HOST-014",
+    "criticality": 5,
+    "zone": "corp"
+  },
+  "mitre": {
+    "tactic": "impact",
+    "technique_id": "T1486",
+    "technique_name": "Data Encrypted for Impact"
+  },
+  "detection": {
+    "confidence": 0.94,
+    "source": "edr"
+  },
+  "context": {
+    "file_modifications": 1843,
+    "shadow_copies_deleted": true,
+    "ransom_note_found": true,
+    "active_c2": true,
+    "payload_path": "C:\\ProgramData\\svchost_updater.exe",
+    "persistence_artifact": "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run\\SysUpdate"
+  }
+}

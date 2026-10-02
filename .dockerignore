@@ -1,0 +1,32 @@
+# Keep the build context small and never ship runtime state into an image.
+# Evidence, memory images and reports must never be baked into a layer.
+# See docs/SECURITY.md section 4 and AGENTS.md section 2.5.
+
+data/
+reports/
+
+# Operator-supplied memory images. Never commit, never image.
+fixtures/memory/
+
+.git/
+.gitignore
+*.md
+!AGENTS.md
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.swp

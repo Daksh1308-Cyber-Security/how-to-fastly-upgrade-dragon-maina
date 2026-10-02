@@ -1,0 +1,33 @@
+{
+  "plugin": "windows.filescan",
+  "rows": [
+    {
+      "Offset": 3145889,
+      "Name": "\\Device\\HarddiskVolume3\\ProgramData\\svchost_updater.exe"
+    },
+    {
+      "Offset": 3145908,
+      "Name": "\\Device\\HarddiskVolume3\\Windows\\CurrentVersion\\Run\\SysUpdate"
+    },
+    {
+      "Offset": 3145928,
+      "Name": "\\Device\\HarddiskVolume3\\Users\\j.okafor\\AppData\\Roaming\\svchost_updater.exe"
+    },
+    {
+      "Offset": 3145948,
+      "Name": "\\Device\\HarddiskVolume3\\Windows\\System32\\Tasks\\OneDriveMaintenanceTask"
+    },
+    {
+      "Offset": 3145968,
+      "Name": "\\Device\\HarddiskVolume3\\Windows\\System32\\lsass.exe"
+    },
+    {
+      "Offset": 3145988,
+      "Name": "\\Device\\HarddiskVolume3\\ProgramData\\e3b0c44298fc1c149afbf4c8996fb924\\payload.bin"
+    },
+    {
+      "Offset": 3146008,
+      "Name": "\\Device\\HarddiskVolume3\\Windows\\notepad.exe"
+    }
+  ]
+}

@@ -1,0 +1,68 @@
+{
+  "plugin": "windows.pslist",
+  "rows": [
+    {
+      "PID": 4,
+      "PPID": 0,
+      "ImageFileName": "System",
+      "Threads": 189,
+      "Handles": 512
+    },
+    {
+      "PID": 664,
+      "PPID": 4,
+      "ImageFileName": "smss.exe",
+      "Threads": 2,
+      "Handles": 26
+    },
+    {
+      "PID": 812,
+      "PPID": 664,
+      "ImageFileName": "csrss.exe",
+      "Threads": 12,
+      "Handles": 340
+    },
+    {
+      "PID": 1044,
+      "PPID": 812,
+      "ImageFileName": "winlogon.exe",
+      "Threads": 8,
+      "Handles": 291
+    },
+    {
+      "PID": 2210,
+      "PPID": 1044,
+      "ImageFileName": "svcs.exe",
+      "Threads": 31,
+      "Handles": 1104
+    },
+    {
+      "PID": 4471,
+      "PPID": 2210,
+      "ImageFileName": "svchost_updater.exe",
+      "Threads": 9,
+      "Handles": 214
+    },
+    {
+      "PID": 9012,
+      "PPID": 4471,
+      "ImageFileName": "powershell.exe",
+      "Threads": 6,
+      "Handles": 88
+    },
+    {
+      "PID": 9264,
+      "PPID": 9012,
+      "ImageFileName": "certutil.exe",
+      "Threads": 3,
+      "Handles": 41
+    },
+    {
+      "PID": 3120,
+      "PPID": 812,
+      "ImageFileName": "explorer.exe",
+      "Threads": 44,
+      "Handles": 1877
+    }
+  ]
+}

@@ -1,0 +1,42 @@
+{
+  "alert_id": "ALT-2026-0002",
+  "timestamp": "2026-09-30T03:02:44Z",
+  "rule": {
+    "id": "SIM-0041",
+    "name": "mass_file_modification"
+  },
+  "name": "Encryption activity on DMZ file server",
+  "source": {
+    "ip": "10.20.2.7",
+    "name": "SRV-FILE-007"
+  },
+  "destination": {
+    "ip": "198.51.100.77",
+    "port": 4444
+  },
+  "user": {
+    "name": "svc-backup",
+    "account_id": "ACC-SVC",
+    "privileged": true
+  },
+  "asset": {
+    "id": "HOST-007",
+    "criticality": 4,
+    "zone": "dmz"
+  },
+  "mitre": {
+    "tactic": "impact",
+    "technique_id": "T1490",
+    "technique_name": "Inhibit System Recovery"
+  },
+  "detection": {
+    "confidence": 0.88,
+    "source": "edr"
+  },
+  "context": {
+    "file_modifications": 9021,
+    "shadow_copies_deleted": true,
+    "payload_path": "C:\\Program Files\\BackupSvc\\svcs.exe",
+    "persistence_artifact": "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run\\BackupHelper"
+  }
+}

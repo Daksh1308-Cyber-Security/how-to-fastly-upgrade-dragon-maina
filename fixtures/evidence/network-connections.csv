@@ -1,0 +1,5 @@
+local_address,local_port,remote_address,remote_port,state,process,pid
+10.20.4.2,49822,203.0.113.44,443,ESTABLISHED,svchost_updater.exe,4471
+10.20.4.2,49830,203.0.113.44,443,ESTABLISHED,svchost_updater.exe,4471
+10.20.4.31,51204,198.51.100.77,4444,ESTABLISHED,svcs.exe,2210
+10.20.4.2,49844,10.20.1.53,53,ESTABLISHED,powershell.exe,9012

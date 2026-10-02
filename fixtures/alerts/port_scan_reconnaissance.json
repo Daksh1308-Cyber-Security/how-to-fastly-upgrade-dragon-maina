@@ -1,0 +1,37 @@
+{
+  "alert_id": "ALT-2026-0011",
+  "timestamp": "2026-09-28T02:14:00Z",
+  "rule": {
+    "id": "SIM-0001",
+    "name": "active_port_scan"
+  },
+  "name": "Sequential port scan against corporate subnet",
+  "source": {
+    "ip": "185.220.101.44",
+    "name": "external"
+  },
+  "destination": {
+    "ip": "10.20.4.0",
+    "port": 0
+  },
+  "user": {
+    "name": "",
+    "account_id": "",
+    "privileged": false
+  },
+  "asset": {
+    "id": "HOST-002",
+    "criticality": 2,
+    "zone": "corp"
+  },
+  "mitre": {
+    "tactic": "discovery",
+    "technique_id": "T1046",
+    "technique_name": "Network Service Discovery"
+  },
+  "detection": {
+    "confidence": 0.71,
+    "source": "ids"
+  },
+  "context": {}
+}

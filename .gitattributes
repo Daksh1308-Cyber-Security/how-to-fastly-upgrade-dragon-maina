@@ -1,0 +1,30 @@
+# Normalise line endings so the tree is identical on Windows, Linux and macOS.
+#
+# Without this, a Windows checkout commits CRLF and a Linux CI checkout
+# commits LF, producing a permanently dirty working tree and spurious diffs in
+# every review.
+
+* text=auto eol=lf
+
+# Scripts must keep LF even on Windows -- CRLF breaks the shebang.
+*.sh text eol=lf
+
+# Lock down files that must never carry CRLF (YAML indentation is fragile).
+*.yaml text eol=lf
+*.yml text eol=lf
+
+# Binary-safe declarations.
+*.png binary
+*.jpg binary
+*.gif binary
+*.ico binary
+*.raw binary
+*.mem binary
+*.vmem binary
+*.dmp binary
+*.lime binary
+
+# Generated reports are text.
+*.html text eol=lf
+*.css text eol=lf
+*.js text eol=lf
