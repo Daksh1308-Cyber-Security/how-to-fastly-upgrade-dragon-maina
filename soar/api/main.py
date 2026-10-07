@@ -12,12 +12,15 @@ This is a thread, not a distributed worker. **Runs do not survive an API
 restart** -- a known limitation recorded in docs/STATUS.md. It is not a Celery
 queue (AGENTS.md section 3).
 
-Reporting endpoints (``/incidents/{id}/report``) are declared in the contract
-but land in Week 3; until then they answer ``501`` rather than pretending.
+Reporting (``GET /incidents/{id}/report``) renders the incident on demand rather
+than as a pipeline stage, so a report never claims to exist for a run that has
+not happened. Formats are ``html``, ``md``, ``exec`` and ``json``; see
+docs/ARCHITECTURE.md section 8.
 """
 
 from __future__ import annotations
 
+import json
 import os
 import threading
 import uuid
@@ -27,7 +30,8 @@ from pathlib import Path
 from typing import Any
 
 from fastapi import FastAPI, HTTPException, Query
-from fastapi.responses import JSONResponse
+from fastapi.encoders import jsonable_encoder
+from fastapi.responses import FileResponse, JSONResponse, Response
 
 from soar import __version__
 from soar.api.schemas import (
@@ -482,20 +486,132 @@ def _known_gaps(covered: list[str]) -> list[str]:
 
 
 @app.get("/incidents/{incident_id}/report", tags=["reporting"])
-def report(incident_id: str, format: str = Query(default="json", pattern="^(json|html|md)$")) -> JSONResponse:
-    """Generated IR report.
+def report(
+    incident_id: str,
+    format: str = Query(default="html", pattern="^(html|md|exec|json)$"),
+    download: bool = Query(default=False),
+) -> Response:
+    """Generate the incident report.
 
-    Week 3 deliverable (docs/PLAN.md W3.1-W3.2). Answers 501 until the Jinja2
-    templates land rather than returning a placeholder report that might be
-    mistaken for a real one.
+    Formats:
+
+    * ``html`` -- full report with the Chart.js action timeline
+    * ``md``   -- Markdown, for a ticket or PR comment
+    * ``exec`` -- one page for a non-technical stakeholder, no jargon
+    * ``json`` -- the raw report context, for programmatic consumers
+
+    Every rendered figure is labelled MEASURED / TARGET per docs/METRICS.md, and
+    an incomplete, failed or rolled-back run is stated at the top of the output
+    rather than in a footnote. ``download=true`` forces attachment disposition.
     """
-    raise HTTPException(
-        status_code=501,
-        detail=(
-            "report generation is scheduled for Week 3 "
-            "(docs/PLAN.md W3.1/W3.2). Use GET /incidents/{id}/timeline meanwhile."
-        ),
+    soar = _soar()
+    incident = soar.store.get_incident(incident_id)
+    if incident is None:
+        raise HTTPException(status_code=404, detail=f"unknown incident {incident_id}")
+
+    from soar.reporting import (
+        ReportError,
+        build_context,
+        render_exec_summary,
+        render_html,
+        render_markdown,
     )
+
+    run = soar.store.latest_run_for(incident_id)
+    results = soar.store.get_action_results(run.id) if run else []
+
+    # The playbook is the authority on which phase an action belongs to;
+    # ActionResult does not persist it (soar/reporting/generator.py).
+    playbook = soar.playbooks.get(run.playbook_id) if run else None
+    phase_of = {a.id: str(a.phase) for a in playbook.actions} if playbook else {}
+
+    # IOCs live in the ioc.extract action result, not in a table of their own.
+    iocs: list[dict[str, Any]] = []
+    for result in results:
+        if result.connector == "ioc.extract" and isinstance(result.result, dict):
+            iocs = list(result.result.get("iocs", []))
+
+    evidence = [e.to_dict() for e in soar.store.get_evidence(incident_id)]
+
+    # Re-hash each artifact so the report reports *current* integrity. Trusting a
+    # stored "verified" flag would only prove that something once said so.
+    for item in evidence:
+        artifact = DATA_DIR / "incidents" / incident_id / "evidence" / str(item["artifact"])
+        item["_recomputed"] = _sha256_file(artifact) if artifact.is_file() else None
+
+    custody_file = DATA_DIR / "incidents" / incident_id / "chain_of_custody.jsonl"
+    custody = _read_jsonl(custody_file)
+
+    context = build_context(
+        incident=incident,
+        run=run,
+        action_results=results,
+        phase_of=phase_of,
+        iocs=iocs,
+        evidence=evidence,
+        custody=custody,
+        coverage=coverage().model_dump(),
+        estate=soar.estate,
+    )
+
+    if format == "json":
+        return JSONResponse(content=jsonable_encoder(context))
+
+    try:
+        if format == "exec":
+            path = render_exec_summary(context, REPORTS_DIR, incident_id)
+        elif format == "md":
+            path = render_markdown(context, REPORTS_DIR, incident_id)
+        else:
+            path = render_html(context, REPORTS_DIR, incident_id)
+    except ReportError as exc:
+        raise HTTPException(status_code=500, detail=f"report generation failed: {exc}") from exc
+
+    media = "text/markdown; charset=utf-8" if format in {"md", "exec"} else "text/html; charset=utf-8"
+    headers = (
+        {"Content-Disposition": f'attachment; filename="{path.name}"'} if download else {}
+    )
+    return FileResponse(path, media_type=media, headers=headers)
+
+
+def _sha256_file(path: Path) -> str | None:
+    """Stream-hash a file. Returns ``None`` if it cannot be read.
+
+    Streaming keeps peak memory flat, which matters because an evidence artifact
+    may be a disk image rather than a text log.
+    """
+    import hashlib
+
+    try:
+        digest = hashlib.sha256()
+        with path.open("rb") as handle:
+            for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+                digest.update(chunk)
+    except OSError:
+        return None
+    return digest.hexdigest()
+
+
+def _read_jsonl(path: Path) -> list[dict[str, Any]]:
+    """Read an append-only JSONL log, skipping unparseable lines.
+
+    A truncated final line (a run killed mid-write) must not stop the report from
+    rendering; the artifacts themselves are integrity-checked separately.
+    """
+    if not path.is_file():
+        return []
+    rows: list[dict[str, Any]] = []
+    for line in path.read_text(encoding="utf-8", errors="replace").splitlines():
+        line = line.strip()
+        if not line:
+            continue
+        try:
+            parsed = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        if isinstance(parsed, dict):
+            rows.append(parsed)
+    return rows
 
 
 @app.post("/playbooks/reload", tags=["ops"])

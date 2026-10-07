@@ -250,12 +250,81 @@ def test_reload_playbooks(client):
 # --- reporting --------------------------------------------------------------
 
 
-def test_report_is_501_until_week3(client):
-    """A placeholder report would be mistakable for a real one."""
+def test_report_defaults_to_html(client):
     incident = _post_alert(client).json()
-    assert client.get(f"/incidents/{incident['id']}/report").status_code == 501
+    resp = client.get(f"/incidents/{incident['id']}/report")
+    assert resp.status_code == 200
+    assert resp.headers["content-type"].startswith("text/html")
+
+
+def test_report_renders_markdown(client):
+    incident = _post_alert(client).json()
+    resp = client.get(f"/incidents/{incident['id']}/report", params={"format": "md"})
+    assert resp.status_code == 200
+    assert resp.headers["content-type"].startswith("text/markdown")
+    assert incident["id"] in resp.text
+
+
+def test_report_renders_exec_summary(client):
+    incident = _post_alert(client).json()
+    resp = client.get(f"/incidents/{incident['id']}/report", params={"format": "exec"})
+    assert resp.status_code == 200
+    assert "Executive Summary" in resp.text
+
+
+def test_report_json_exposes_the_context(client):
+    incident = _post_alert(client).json()
+    body = client.get(f"/incidents/{incident['id']}/report", params={"format": "json"}).json()
+    assert body["incident"]["id"] == incident["id"]
+    assert body["metrics"]["label"] == "MEASURED"
+    assert body["baseline"]["label"] == "TARGET"
+
+
+def test_report_for_an_unrun_incident_says_nothing_was_contained(client):
+    """A triage-only incident must not read as contained."""
+    incident = _post_alert(client).json()
+    text = client.get(f"/incidents/{incident['id']}/report", params={"format": "exec"}).text
+    assert "Not assessed" in text
+    assert "Yes, contained" not in text
+
+
+def test_report_labels_every_figure_it_renders(client):
+    incident = _post_alert(client).json()
+    for fmt in ("html", "md", "exec"):
+        text = client.get(f"/incidents/{incident['id']}/report", params={"format": fmt}).text
+        assert "MEASURED" in text, f"{fmt} report rendered an unlabelled figure"
+        assert "TARGET" in text, f"{fmt} report rendered an unlabelled baseline figure"
+
+
+def test_report_download_sets_attachment_disposition(client):
+    incident = _post_alert(client).json()
+    resp = client.get(
+        f"/incidents/{incident['id']}/report", params={"format": "html", "download": "true"}
+    )
+    assert "attachment" in resp.headers["content-disposition"]
+    assert incident["id"] in resp.headers["content-disposition"]
 
 
 def test_report_rejects_bad_format(client):
     incident = _post_alert(client).json()
     assert client.get(f"/incidents/{incident['id']}/report", params={"format": "pdf"}).status_code == 422
+
+
+def test_report_unknown_incident_is_404(client):
+    assert client.get("/incidents/INC-NOPE/report").status_code == 404
+
+
+def test_report_writes_into_the_documented_output_path(client, tmp_path_factory):
+    """AGENTS.md section 6: reports/html/<incident_id>.html."""
+    from soar.api import main as api_main
+
+    incident = _post_alert(client).json()
+    client.get(f"/incidents/{incident['id']}/report", params={"format": "html"})
+    client.get(f"/incidents/{incident['id']}/report", params={"format": "md"})
+    client.get(f"/incidents/{incident['id']}/report", params={"format": "exec"})
+
+    html_path = api_main.REPORTS_DIR / "html" / f"{incident['id']}.html"
+    assert html_path.is_file()
+    assert (api_main.REPORTS_DIR / "md" / f"{incident['id']}.md").is_file()
+    assert (api_main.REPORTS_DIR / "md" / f"{incident['id']}-exec.md").is_file()
+    assert "chart.js" in html_path.read_text(encoding="utf-8").lower()

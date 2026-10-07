@@ -10,6 +10,16 @@ with chain of custody, analyse memory with Volatility 3, and generate IR reports
 > commands against real infrastructure. Read [`docs/SECURITY.md`](docs/SECURITY.md) and
 > [`AGENTS.md`](AGENTS.md) before running anything.
 
+## Visual overview
+
+| Report artefact | What it shows | Where to find it |
+|---|---|---|
+| **HTML report** | Full incident report with Chart.js action timeline, evidence integrity, caveats and labelling (MEASURED/TARGET). | [`reports/html/INC-E145A308EA3F.html`](reports/html/INC-E145A308EA3F.html) |
+| **Markdown report** | Ticket-ready technical report. | [`reports/md/INC-E145A308EA3F.md`](reports/md/INC-E145A308EA3F.md) |
+| **Executive summary** | Non-technical, one-page briefing. | [`reports/md/INC-E145A308EA3F-exec.md`](reports/md/INC-E145A308EA3F-exec.md) |
+
+Every figure is explicitly labelled **MEASURED** or **TARGET** per [`docs/METRICS.md`](docs/METRICS.md). The HTML template loads Chart.js from a CDN as a reporting convenience only — the report degrades gracefully without it and the project has no other runtime dependency on it.
+
 ---
 
 ## Project status
@@ -18,10 +28,11 @@ with chain of custody, analyse memory with Volatility 3, and generate IR reports
 |---|---|---|
 | 1 | Playbook framework | 🟢 Gate met |
 | 2 | Forensics & response | 🟢 Gate met |
-| 3 | Reporting & documentation | 🔄 In progress — reports pending |
+| 3 | Reporting & documentation | 🟢 Gate met |
 
 The engine, playbooks, containment, forensics and IOC extraction are built and tested
-(**234 tests passing**, no network required). Report generation is the remaining work. Live progress lives in
+(**270 tests passing**, no network required). Reporting (HTML/Markdown/executive summary), timeline generation
+and evidence integrity verification are all implemented and covered by tests. Live progress lives in
 [`docs/STATUS.md`](docs/STATUS.md) — update it and this table in the same change as work lands.
 
 ## What it does (one paragraph)
@@ -34,7 +45,9 @@ SHA-256 each artifact into an append-only chain-of-custody log, run Volatility 3
 memory image, and extract IOCs with source attribution. Containment actions — **simulated** — mutate
 a modelled estate of hosts, firewall rules and accounts; every mutation is journalled so that on
 abort, compensations run in reverse order and restore the estate **exactly**. Each run produces a
-timeline and a Jinja2 report in HTML, Markdown and an executive-summary form.
+timeline and a Jinja2 report in HTML, Markdown and an executive-summary form. Evidence integrity is
+recomputed on-the-fly (stored SHA-256 vs recomputed digest) so that missing or tampered artifacts
+are surfaced as report caveats rather than being trusted blindly.
 
 ## Architecture at a glance
 
@@ -113,6 +126,12 @@ curl -X POST http://localhost:8000/incidents/<id>/actions/<action_id>/approve
 # 7. Phase timeline and coverage gaps
 curl http://localhost:8000/incidents/<id>/timeline
 curl http://localhost:8000/playbooks
+
+# 8. Generate the IR report (HTML, Markdown, exec summary, or raw JSON)
+curl http://localhost:8000/incidents/<id>/report?format=html > reports/html/<id>.html
+curl http://localhost:8000/incidents/<id>/report?format=md > reports/md/<id>.md
+curl http://localhost:8000/incidents/<id>/report?format=exec > reports/md/<id>-exec.md
+curl http://localhost:8000/incidents/<id>/report?format=json
 ```
 
 ### Verified walkthrough output
@@ -155,8 +174,8 @@ Estate after run:
 The rationale lines sum to exactly 91 — the score is auditable term by term, which is the point
 of a deterministic severity function ([`docs/METRICS.md`](docs/METRICS.md) §4).
 
-`GET /incidents/{id}/report` returns `501` until Week 3. Use
-`GET /incidents/{id}/timeline` meanwhile.
+Generate the full report on demand via `GET /incidents/{id}/report?format=html|md|exec|json` (see Quick start below). Use
+`GET /incidents/{id}/timeline` for the raw phase sequence.
 
 ## Metrics
 
